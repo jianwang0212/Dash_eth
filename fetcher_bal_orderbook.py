@@ -4,15 +4,9 @@ from datetime import datetime
 import ccxt
 import sqlite3
 import config
+import settings
 
-ex = 'indodax'
-currency_f = 'idr'
-currency_c = 'eth'
-pair = currency_c.upper() + '/' + currency_f.upper()
 now = datetime.utcnow()
-now_ts = now.timestamp()
-
-apiInstance = settings.exchanges[ex]['init']
 
 
 def get_fx(currency_f):
@@ -21,14 +15,14 @@ def get_fx(currency_f):
     return fx['quotes']['USD' + currency_f.upper()]
 
 
-def get_basic(time):
+def get_basic(time, ex, currency_f):
     now_ts = datetime.timestamp(time)
     fx_name = 'USD/' + currency_f.upper()
     fx_rate = get_fx(currency_f)
     basics = {'time': now.strftime("%y-%m-%d %H:%M:%S"),
               'utc': [now_ts],
               'exchange': [ex],
-              'pair': [pair],
+              'pair': ['ETH/' + currency_f.upper()],
               fx_name: [float(fx_rate)]}
     basics = pd.DataFrame(basics)
     return basics
@@ -55,6 +49,7 @@ def get_ob(ex, pair):
 
 
 def get_bal(ex, currency_f):
+    apiInstance = settings.exchanges[ex]['init']
     bal = apiInstance.fetch_balance()
     bal_fiat_free = bal[currency_f.upper()]['free']
     bal_eth_free = bal['ETH']['free']
@@ -69,19 +64,32 @@ def get_bal(ex, currency_f):
     return df
 
 
-basics = get_basic(now)
+def fetcher(exchange, now):
+    ex = exchange['name']
+    currency_c = 'eth'
+    currency_f = exchange['currency']
+    now_ts = now.timestamp()
+    pair = currency_c.upper() + '/' + currency_f.upper()
+    apiInstance = settings.exchanges[ex]['init']
 
-bl = get_bal(ex, currency_f)
-ob = get_ob(ex, pair)
+    basics = get_basic(now, ex, currency_f)
+    bl = get_bal(ex, currency_f)
+    ob = get_ob(ex, pair)
+    df = pd.concat([basics, bl, ob], axis=1)
+    return df
 
-df = pd.concat([basics, bl, ob], axis=1)
 
-
-def save_to_sql():
+def save_to_sql(ex, df):
     conn = sqlite3.connect('/Users/Zi/Projects/Dash_eth/test.db')
     table_name = ex + "_bal_orderbook"
     df.to_sql(table_name, conn, if_exists='append')
     conn.close()
 
 
-save_to_sql()
+exchanges = settings.exchanges
+
+for k, v in exchanges.items():
+    exchange_name = k
+    exchange = v
+    df = fetcher(exchange, now)
+    save_to_sql(exchange_name, df)
