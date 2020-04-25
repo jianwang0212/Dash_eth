@@ -1,4 +1,6 @@
 *.pyc
-
+config.py
 !**/__pycache__/
 *.pwk
+.ipynb_checkpoints
+*.db
