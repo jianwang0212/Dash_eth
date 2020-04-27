@@ -23,7 +23,7 @@ def get_basic(time, ex, currency_f):
               'utc': [now_ts],
               'exchange': [ex],
               'pair': ['ETH/' + currency_f.upper()],
-              fx_name: [float(fx_rate)]}
+              'fx': [float(fx_rate)]}
     basics = pd.DataFrame(basics)
     return basics
 
@@ -64,6 +64,14 @@ def get_bal(ex, currency_f):
     return df
 
 
+def get_open_order(ex, currency_f):
+    apiInstance = settings.exchanges[ex]['init']
+    open_orders = apiInstance.fetch_open_orders()
+    df = pd.DataFrame(open_orders)
+    df.drop(['clientOrderId', 'info'], axis=1)
+    return df
+
+
 def fetcher(exchange, now):
     ex = exchange['name']
     currency_c = 'eth'
@@ -75,14 +83,32 @@ def fetcher(exchange, now):
     basics = get_basic(now, ex, currency_f)
     bl = get_bal(ex, currency_f)
     ob = get_ob(ex, pair)
+
     df = pd.concat([basics, bl, ob], axis=1)
-    return df
+
+    df_openOrder = get_open_order(ex, currency_f)
+    num_rows = df_openOrder.shape[0] - 1
+    basics_repeated = basics.append([basics] * num_rows)
+    basics_repeated.reset_index(drop=True, inplace=True)
+    df_openOrder = pd.concat([basics_repeated, df_openOrder], axis=1)
+    select = ['time', 'utc', 'exchange', 'pair', 'fx', 'id', 'timestamp', 'lastTradeTimestamp',
+              'symbol', 'type', 'side', 'price', 'cost', 'average', 'amount',
+              'filled', 'remaining', 'status', 'fee', 'trades']
+    df_openOrder = df_openOrder[select]
+    name = ['time', 'utc', 'exchange', 'pair', 'fx', 'OpenOrder_id', 'OpenOrder_timestamp', 'OpenOrder_lastTradeTimestamp',
+            'OpenOrder_symbol', 'OpenOrder_type', 'OpenOrder_side', 'OpenOrder_price', 'OpenOrder_cost', 'OpenOrder_average', 'OpenOrder_amount',
+            'OpenOrder_filled', 'OpenOrder_remaining', 'OpenOrder_status', 'OpenOrder_fee', 'OpenOrder_trades']
+    df_openOrder.columns = name
+    return df, df_openOrder
 
 
-def save_to_sql(ex, df):
+def save_to_sql(ex, df, df_openOrder):
     conn = sqlite3.connect('/Users/Zi/Projects/Dash_eth/test.db')
     table_name = ex + "_bal_orderbook"
     df.to_sql(table_name, conn, if_exists='append')
+
+    table_name = ex + "_open_order"
+    df_openOrder.to_sql(table_name, conn, if_exists='append')
     conn.close()
 
 
@@ -91,5 +117,5 @@ exchanges = settings.exchanges
 for k, v in exchanges.items():
     exchange_name = k
     exchange = v
-    df = fetcher(exchange, now)
-    save_to_sql(exchange_name, df)
+    df, df_openOrder = fetcher(exchange, now)
+    save_to_sql(exchange_name, df, df_openOrder)
