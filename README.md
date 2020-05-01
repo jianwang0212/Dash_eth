@@ -35,23 +35,30 @@ python3 app.py
 
 ```
 
-## About data
+## About the Data_fetcher folder
 
 fetcher_bal_orderbook.py: fetch orderbook and bal data in an exchange => save to
-the data base.
+the database.
 
 
 
 fetcher_trades.py: fetch historical my trades for an exchange => save to
-the data base.
+the database.
 
 merger_td_bal_ods.py: merge all data into a single table in SQL
 
-p.s.
+
+check_sql.ipynb: check the SQL database for the above three tables in the pandas
+dataframe format
+
+other files: make it easy for test single function for the fetcher
+
+
+## p.s.
 
 * the config file is the API key and secret you need to get your bal & personal trade
 
-e.g.:
+The format may look like the following(fake key)
 
 ```
 indodax = {
