@@ -4,3 +4,4 @@ config.py
 *.pwk
 .ipynb_checkpoints
 *.db
+dash_napoli_venv/
