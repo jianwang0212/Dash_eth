@@ -36,7 +36,7 @@ gunicorn==19.9.0
 idna==2.9
 iexfinance==0.4.3
 itsdangerous==0.24
-Jinja2==2.10.3
+Jinja2==2.11.3
 jinja2-time==0.2.0
 kiwisolver==1.1.0
 linode-api4==2.3.3
