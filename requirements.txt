@@ -64,7 +64,7 @@ scipy==1.4.1
 seaborn==0.10.0
 six==1.11.0
 SQLAlchemy==1.2.7
-urllib3==1.25.8
+urllib3==1.26.5
 Werkzeug==0.16.0
 whichcraft==0.6.1
 WTForms==2.1
