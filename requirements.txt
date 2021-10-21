@@ -1,6 +1,6 @@
 alembic==1.4.1
 arrow==0.15.5
-Babel==2.8.0
+Babel==2.9.1
 bcrypt==3.1.4
 binaryornot==0.4.4
 blinker==1.4
