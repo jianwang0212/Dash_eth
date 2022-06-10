@@ -9,7 +9,7 @@ cffi==1.11.5
 chardet==3.0.4
 click==7.1.1
 colorlover==0.3.0
-cookiecutter==1.7.0
+cookiecutter==2.1.1
 cycler==0.10.0
 dash==1.9.0
 dash-bootstrap-components==0.8.3
